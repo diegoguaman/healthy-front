@@ -1,17 +1,25 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createChat } from "../services/ChatService";
-import { AuthContext } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { getRecipes } from "../services/RecipesService";
+import { handleApiError } from "../utils/error-handler";
+import { saveGeneratedRecipes } from "../utils/generatedRecipesStorage";
+import RecipeCard from "../components/RecipeCard/RecipeCard";
 import "../index.css";
 import { Link, useNavigate } from "react-router-dom";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 import { BsSearch } from "react-icons/bs";
 import { INGREDIENTS_VALUES } from "../utils/ingredientsButtons";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Alert } from "react-bootstrap";
 
+/**
+ * Home Page Component
+ * Displays recipes and allows authenticated users to generate custom recipes.
+ * Follows Single Responsibility: handles recipe display and generation UI.
+ */
 const Home = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [ingredients, setIngredients] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [recipesApi, setRecipesApi] = useState([]);
@@ -20,6 +28,7 @@ const Home = () => {
   const [search, setSearch] = useState("");
   const [showScroll, setShowScroll] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearchInput = (event) => {
     const searchQuery = event.target.value;
@@ -27,12 +36,19 @@ const Home = () => {
   };
 
   useEffect(() => {
-    getRecipes()
-      .then((recipesDB) => {
-        setRecipes(recipesDB);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchRecipes = async () => {
+      try {
+        const recipesDB = await getRecipes();
+        setRecipes(Array.isArray(recipesDB) ? recipesDB : []);
+      } catch (err) {
+        handleApiError(err, "Recipes");
+        setRecipes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipes();
   }, []);
 
   useEffect(() => {
@@ -74,26 +90,40 @@ const Home = () => {
     }
   };
 
-  const onSubmit = (event) => {
+  /**
+   * Handles recipe generation form submission.
+   * Separates concerns: form handling vs API call.
+   *
+   * @param {React.FormEvent<HTMLFormElement>} event - Form submit event
+   */
+  const onSubmit = async (event) => {
     event.preventDefault();
+
+    if (ingredients.length === 0) {
+      return;
+    }
+
     setLoadingApi(true);
-    setTimeout(() => {
-      console.log("dentro set");
-      setLoadingApi(false);
-      setIngredients([]);
-    }, 5000);
-    createChat(ingredients)
-      .then((recipesApiRes) => {
+    setShowModal(false);
+
+    try {
+      const response = await createChat(ingredients);
+      const generatedRecipes = response.createdRecipes || response.recipes || [];
+      
+      if (generatedRecipes.length > 0) {
+        saveGeneratedRecipes(generatedRecipes);
+        setRecipesApi(generatedRecipes);
         setShowModal(true);
-        setRecipesApi(recipesApiRes.createdRecipes);
-        setIngredients([]);
-      })
-      .catch((err) => {
-        setLoadingApi(false);
-        setIngredients([]);
-        console.error(err);
-      })
-      .finally(() => setLoadingApi(false));
+      }
+      
+      setIngredients([]);
+      setError(null);
+    } catch (err) {
+      setError(handleApiError(err, "Recipe Generation"));
+      setIngredients([]);
+    } finally {
+      setLoadingApi(false);
+    }
   };
 
   return (
@@ -129,12 +159,17 @@ const Home = () => {
               }}
             />
           </div>
+          {error && (
+            <Alert variant="danger" dismissible onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           <div className="container">
             {user && (
               <>
                 <h2 className="h2 mb-4">Puedes crear tu receta customizada</h2>
                 <p className="text-center">
-                  Elige los ingresdientes que quieres probar y prepararemos
+                  Elige los ingredientes que quieres probar y prepararemos
                   recetas para tí!
                 </p>
 
@@ -189,22 +224,43 @@ const Home = () => {
               </>
             )}
           </div>
-          {user && recipesApi && (
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+          {user && recipesApi && recipesApi.length > 0 && (
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
               <Modal.Header closeButton>
-                <Modal.Title>Tus recetas están listas</Modal.Title>
+                <Modal.Title>
+                  <i className="fa-solid fa-check-circle text-success me-2"></i>
+                  ¡Tus recetas están listas!
+                </Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <p>¡Resvisa tu email!</p>
+                <p className="mb-3">
+                  Se han generado <strong>{recipesApi.length}</strong>{" "}
+                  {recipesApi.length === 1 ? "receta personalizada" : "recetas personalizadas"} para ti.
+                </p>
+                <p className="text-muted small mb-3">
+                  <i className="fa-solid fa-envelope me-1"></i>
+                  También las hemos enviado a tu email.
+                </p>
+                <div className="d-grid gap-2">
+                  <Button
+                    variant="primary"
+                    className="btn-custom"
+                    onClick={() => {
+                      setShowModal(false);
+                      navigate("/generated-recipes");
+                    }}
+                  >
+                    <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+                    Ver mis recetas generadas
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Continuar explorando
+                  </Button>
+                </div>
               </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate("/favorite-recipes")}
-                >
-                  Ve a tus recetas
-                </Button>
-              </Modal.Footer>
             </Modal>
           )}
           {loading ? (
@@ -214,40 +270,13 @@ const Home = () => {
               </div>
             </>
           ) : (
-            filteredRecipes.map((recipe) => (
-              <div
-                className="card mb-3 mt-5"
-                style={{ maxWidth: "540px" }}
-                key={recipe._id}
-              >
-                <div className="row g-0">
-                  <div className="col-md-4">
-                    <img
-                      src={recipe.urlImage}
-                      className="img-fluid rounded-start"
-                      alt={recipe.name}
-                    />
-                  </div>
-                  <div className="col-md-8">
-                    <div className="card-body">
-                      <h5 className="card-title">{recipe.name}</h5>
-                      <p className="card-text">{recipe.phrase}</p>
-                      <p className="card-text">
-                        <small className="text-muted">
-                          {recipe.preparationTime} min
-                        </small>
-                      </p>
-                      <Link
-                        to={`/recipes/${recipe._id}`}
-                        style={{ color: "#83a580" }}
-                      >
-                        Ver más
-                      </Link>
-                    </div>
-                  </div>
+            <div className="row">
+              {filteredRecipes.map((recipe) => (
+                <div key={recipe._id} className="col-12 col-md-6 col-lg-4 mb-4">
+                  <RecipeCard recipe={recipe} />
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
           <button
             className={`scroll-to-top ${showScroll ? "show" : ""}`}

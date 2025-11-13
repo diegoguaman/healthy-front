@@ -10,6 +10,7 @@ import RecipeDetails from "./pages/RecipesDetails";
 
 import FavoriteRecipes from "./pages/FavoriteRecipes";
 import UserProfile from "./pages/UserProfile";
+import GeneratedRecipes from "./pages/GeneratedRecipes";
 
 function App() {
   return (
@@ -34,6 +35,14 @@ function App() {
         />
         <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
+        <Route
+          path="/generated-recipes"
+          element={
+            <ProtectedRoute>
+              <GeneratedRecipes />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

@@ -1,43 +1,68 @@
 import axios from "axios";
 import { getAccessToken, logout } from "../stores/AccessTokenStore";
 
-const INVALID_STATUS_CODES = [401];
+const UNAUTHORIZED_STATUS_CODE = 401;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+/**
+ * Creates an HTTP client instance with optional authentication interceptor.
+ * Follows Single Responsibility Principle: handles HTTP configuration and interceptors.
+ *
+ * @param {boolean} useAccessToken - Whether to include authentication token in requests
+ * @returns {AxiosInstance} Configured axios instance
+ */
 const createHttp = (useAccessToken = false) => {
+  if (!API_BASE_URL) {
+    throw new Error("VITE_API_URL environment variable is not defined");
+  }
+
   const http = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: API_BASE_URL,
+    timeout: 30000,
   });
 
   if (useAccessToken) {
     http.interceptors.request.use(
       (config) => {
-        // Si alguien crea una instancia de createHttp pasando useAccesToken a true, quiere decir que esa peticion requiere esta autenticada. Por lo que intento coger el token de la store y meterselo en la cabecera Authorization
-        config.headers.Authorization = `Bearer ${getAccessToken()}`;
-
+        const token = getAccessToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
       },
-      (err) => Promise.reject(err)
+      (error) => Promise.reject(error)
     );
   }
 
   http.interceptors.response.use(
-    function (response) {
-      return response.data;
-    },
-    function (error) {
-      // if (error && err.response && err.response.status) // Codigo equivalente
-      if (
-        error?.response?.status &&
-        INVALID_STATUS_CODES.includes(error.response.status)
-      ) {
-        // Si tengo un error 401, probablemente movida de JWT. Borro el token y te llevo al login
+    (response) => response.data,
+    (error) => {
+      const statusCode = error?.response?.status;
+      let errorData = error?.response?.data;
+
+      if (statusCode === UNAUTHORIZED_STATUS_CODE) {
         if (getAccessToken()) {
           logout();
         }
       }
 
-      console.log("******************ERROR", error);
-      return Promise.reject(error.response.data);
+      if (typeof errorData === "string" && errorData.includes("<!DOCTYPE")) {
+        errorData = {
+          message: statusCode === 404
+            ? "El recurso solicitado no está disponible"
+            : "Error del servidor",
+          statusCode,
+        };
+      } else if (!errorData || typeof errorData !== "object") {
+        errorData = {
+          message: statusCode === 404
+            ? "El recurso solicitado no está disponible"
+            : "Ha ocurrido un error inesperado",
+          statusCode,
+        };
+      }
+
+      return Promise.reject({ ...errorData, response: error?.response });
     }
   );
 

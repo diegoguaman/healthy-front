@@ -2,19 +2,37 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 import { getFavorites } from "../services/RecipesService";
+import { handleApiError } from "../utils/error-handler";
+import RecipeCard from "../components/RecipeCard/RecipeCard";
+import { Alert } from "react-bootstrap";
 
+/**
+ * FavoriteRecipes Page Component
+ * Displays user's favorite recipes.
+ * Follows Single Responsibility: handles display of favorite recipes.
+ */
 const FavoriteRecipes = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
-    getFavorites()
-      .then((favoritesDB) => {
-        setFavorites(favoritesDB);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchFavorites = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const favoritesDB = await getFavorites();
+        setFavorites(Array.isArray(favoritesDB) ? favoritesDB : []);
+      } catch (err) {
+        setError(handleApiError(err, "Favorite Recipes"));
+        setFavorites([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavorites();
   }, []);
 
   useEffect(() => {
@@ -50,47 +68,57 @@ const FavoriteRecipes = () => {
   }
 
   return (
-    <div className="container mt-5 text-center">
-      <h2 className="h2 mb-3">Recetas Favoritas</h2>
+    <div className="container mt-5">
+      <div className="row mb-4">
+        <div className="col-12 text-center">
+          <h1 className="h2 mb-3" style={{ color: "#83a580" }}>
+            <i className="fa-solid fa-heart me-2"></i>
+            Recetas Favoritas
+          </h1>
+          <p className="text-muted">
+            Tus recetas guardadas para acceso rápido
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-4">
+          <Alert.Heading>Error al cargar recetas favoritas</Alert.Heading>
+          <p>{error}</p>
+        </Alert>
+      )}
+
       {favorites.length > 0 ? (
-        favorites.map((recipe) => (
-          <div
-            className="card mb-3"
-            style={{ maxWidth: "540px", margin: "20px auto" }}
-            key={recipe._id}
-          >
-            <div className="row g-0">
-              <div className="col-md-4">
-                <img
-                  src={recipe.urlImage}
-                  className="img-fluid rounded-start"
-                  alt={recipe.name}
-                />
-              </div>
-              <div className="col-md-8">
-                <div className="card-body">
-                  <h5 className="card-title">{recipe.name}</h5>
-                  <p className="card-text">{recipe.phrase}</p>
-                  <p className="card-text">
-                    <small className="text-muted">
-                      {recipe.preparationTime} min
-                    </small>
-                  </p>
-                  <Link to={`/recipes/${recipe._id}`}>Ver más</Link>
-                </div>
-              </div>
+        <>
+          <div className="row mb-3">
+            <div className="col-12 text-end">
+              <span className="badge bg-danger fs-6">
+                {favorites.length} {favorites.length === 1 ? "receta favorita" : "recetas favoritas"}
+              </span>
             </div>
           </div>
-        ))
+
+          <div className="row">
+            {favorites.map((recipe) => (
+              <div key={recipe._id} className="col-12 col-md-6 col-lg-4 mb-4">
+                <RecipeCard recipe={recipe} />
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <h2>Aún no has guardado recetas como favoritas</h2>
-          <p>
-            <Link to="/" style={{ color: "#83a580" }}>
-              Volver a la página principal
-            </Link>{" "}
-            para añadir recetas
+        <div className="text-center mt-5 py-5">
+          <div className="mb-4">
+            <i className="fa-solid fa-heart" style={{ fontSize: "4rem", color: "#83a580", opacity: 0.5 }}></i>
+          </div>
+          <h3 className="h4 mb-3">Aún no has guardado recetas como favoritas</h3>
+          <p className="text-muted mb-4">
+            Explora las recetas disponibles y marca tus favoritas para acceso rápido
           </p>
+          <Link to="/" className="btn btn-custom">
+            <i className="fa-solid fa-arrow-left me-2"></i>
+            Volver a la página principal
+          </Link>
         </div>
       )}
 

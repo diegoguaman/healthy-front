@@ -1,23 +1,28 @@
-import { useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import PacmanLoading from "./PacmanLoading/PacmanLoading";
 
+/**
+ * ProtectedRoute Component
+ * Guards routes that require authentication.
+ * Follows Single Responsibility Principle: handles route protection only.
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render if authenticated
+ * @returns {React.ReactNode} Protected content or redirect to login
+ */
 const ProtectedRoute = ({ children }) => {
-  //Consumimos el contexto
-  const { user, isAuthLoaded } = useContext(AuthContext);
+  const { user, isAuthLoaded } = useAuth();
 
-  //Verificamos si el auth esta cargado
   if (!isAuthLoaded) {
-    return <p>Loading...</p>;
+    return <PacmanLoading />;
   }
 
-  //Verificamos el usuario y lo mandamos a login si o si
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
-  return (
-    children
-  );
+
+  return children;
 };
 
 export default ProtectedRoute;

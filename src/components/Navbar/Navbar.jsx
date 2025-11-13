@@ -1,13 +1,22 @@
-import { Link } from "react-router-dom";
-import { logout } from "../../stores/AccessTokenStore";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../contexts/AuthContext";
-import "./navbar.css"
+import { Link, useNavigate } from "react-router-dom";
+import { clearAccessToken } from "../../stores/AccessTokenStore";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect, useState } from "react";
+import "./navbar.css";
 
+/**
+ * Navbar Component
+ * Main navigation bar with authentication-aware menu items.
+ * Follows Single Responsibility: handles navigation UI only.
+ */
 const Navbar = () => {
-  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user, logout: logoutFromContext } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  /**
+   * Closes mobile menu on scroll for better UX.
+   */
   useEffect(() => {
     const handleScroll = () => {
       if (isMenuOpen) {
@@ -16,14 +25,26 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isMenuOpen]);
 
+  /**
+   * Toggles mobile menu visibility.
+   */
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  /**
+   * Handles user logout.
+   * Separates concerns: token clearing vs navigation.
+   */
+  const handleLogout = () => {
+    clearAccessToken();
+    logoutFromContext();
+    navigate("/login");
   };
 
 
@@ -89,7 +110,14 @@ const Navbar = () => {
                     </Link>
                   </li>
                   <li>
+                    <Link className="dropdown-item" to="/generated-recipes">
+                      <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+                      Mis recetas generadas
+                    </Link>
+                  </li>
+                  <li>
                     <Link className="dropdown-item" to="/favorite-recipes">
+                      <i className="fa-solid fa-heart me-2"></i>
                       Mis recetas favoritas
                     </Link>
                   </li>
@@ -98,6 +126,7 @@ const Navbar = () => {
                   </li>
                   <li>
                     <Link className="dropdown-item" to="/profile">
+                      <i className="fa-solid fa-user me-2"></i>
                       Ver perfil completo
                     </Link>
                   </li>
@@ -113,7 +142,7 @@ const Navbar = () => {
             </li>
             <li className="nav-item">
               {user && (
-                <button onClick={logout} className="btn btn-custom ms-2">
+                <button onClick={handleLogout} className="btn btn-custom ms-2">
                   Cerrar Sesión
                 </button>
               )}

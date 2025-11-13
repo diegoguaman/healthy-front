@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
+import { handleApiError } from "../utils/error-handler";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,34 +29,45 @@ const Register = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
 
+  /**
+   * Handles input field changes.
+   * Uses functional update pattern for better performance.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLSelectElement>} event - Input change event
+   */
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setUser({
-      ...user,
+    setUser((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  const handleComplete = () => {
+  /**
+   * Handles form completion and user registration.
+   * Separates concerns: form handling vs API call.
+   */
+  const handleComplete = async () => {
     setLoading(true);
-    createUser(user)
-      .then(() => {
-        setShowModal(true);
-      })
-      .catch((err) => {
-        console.log("ERRROR", err);
-        const errorMessage =
-          err.message || "An error occurred, please try again.";
+    setError("");
 
-        console.log("errorMessage", errorMessage);
-        setError(errorMessage);
-      })
-      .finally(() => setLoading(false));
+    try {
+      await createUser(user);
+      setShowModal(true);
+    } catch (err) {
+      setError(handleApiError(err, "User Registration"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const tabChanged = ({ prevIndex, nextIndex }) => {
-    console.log("prevIndex", prevIndex);
-    console.log("nextIndex", nextIndex);
+  /**
+   * Handles wizard tab changes to track last step.
+   *
+   * @param {Object} params - Tab change parameters
+   * @param {number} params.nextIndex - Next tab index
+   */
+  const tabChanged = ({ nextIndex }) => {
     setIsLastStep(nextIndex === 4);
   };
 

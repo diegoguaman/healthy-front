@@ -1,44 +1,65 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { loginService } from "../services/UserService";
-import { AuthContext } from "../contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { handleApiError } from "../utils/error-handler";
 import "../index.css";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 
+/**
+ * Login Page Component
+ * Handles user authentication.
+ * Follows Single Responsibility: handles login form and authentication flow.
+ */
 const Login = () => {
-  const { login, user: currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { login, user: currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState({
+  const [credentials, setCredentials] = useState({
     email: "",
     password: "",
   });
 
+  /**
+   * Handles input field changes.
+   * Uses functional update pattern for better performance.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} event - Input change event
+   */
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-
-    setUser({
-      ...user,
+    setCredentials((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  const handleSubmit = (event) => {
+  /**
+   * Handles form submission and authentication.
+   * Separates concerns: form handling vs authentication logic.
+   *
+   * @param {React.FormEvent<HTMLFormElement>} event - Form submit event
+   */
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    loginService(user)
-      .then((token) => {
-        login(token);
-      })
-      .catch((err) => {
-        console.log(err);
-        setError(err);
-      })
-      .finally(() => setLoading(false));
+    setError(null);
+
+    try {
+      const token = await loginService(credentials);
+      login(token, () => {
+        navigate("/profile");
+      });
+    } catch (err) {
+      setError(handleApiError(err, "Login"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (currentUser) {
-    return <Navigate to="/profile" />;
+    return <Navigate to="/profile" replace />;
   }
 
   return (
@@ -56,12 +77,13 @@ const Login = () => {
               <input
                 name="email"
                 onChange={handleInputChange}
-                value={user.email}
+                value={credentials.email}
                 type="email"
                 className="form-control form-control-custom"
                 id="email"
                 required
                 placeholder="Add a email..."
+                disabled={loading}
               />
             </div>
             <div className="mb-3">
@@ -74,15 +96,20 @@ const Login = () => {
               <input
                 name="password"
                 onChange={handleInputChange}
-                value={user.password}
+                value={credentials.password}
                 type="password"
                 className="form-control form-control-custom"
                 id="password"
                 required
                 placeholder="Add a password..."
+                disabled={loading}
               />
             </div>
-            {error && <p className="text-danger">{error.message}</p>}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
             <div className="btn-container">
               <button type="submit" className="btn btn-custom btn-lg px-5">
                 Entrar
