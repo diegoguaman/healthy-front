@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import { createUser } from "../services/UserService";
 import Input from "../components/Input/Input";
 import FormWizard from "react-form-wizard-component";
@@ -17,8 +17,8 @@ const Register = () => {
     email: "",
     password: "",
     gender: "",
-    weight: 0,
-    height: 0,
+    weight: "",
+    height: "",
     objetive: "",
     ability: "",
     typeDiet: "",
@@ -63,36 +63,78 @@ const Register = () => {
 
   /**
    * Handles wizard tab changes to track last step.
+   * Uses useCallback to prevent unnecessary re-renders and avoid setState during render warnings.
    *
    * @param {Object} params - Tab change parameters
    * @param {number} params.nextIndex - Next tab index
    */
-  const tabChanged = ({ nextIndex }) => {
-    setIsLastStep(nextIndex === 4);
-  };
+  const tabChanged = useCallback(({ nextIndex }) => {
+    const isLast = nextIndex === 4;
+    setTimeout(() => {
+      setIsLastStep(isLast);
+    }, 0);
+  }, []);
 
-  useEffect(() => {
+  const wizardContainerRef = useRef(null);
+
+  /**
+   * Translates wizard buttons to Spanish.
+   * Uses useLayoutEffect to ensure DOM manipulation happens synchronously before paint.
+   */
+  useLayoutEffect(() => {
     const translateButtons = () => {
-      const backButton = document.querySelector(
+      const container = wizardContainerRef.current || document.body;
+      const backButton = container.querySelector(
         ".wizard-footer-left .wizard-btn"
       );
-      const nextButton = document.querySelector(
+      const nextButton = container.querySelector(
         ".wizard-footer-right .wizard-btn"
       );
-      const completeButton = document.querySelector(
+      const completeButton = container.querySelector(
         ".wizard-complete .wizard-btn"
       );
 
-      if (backButton) backButton.textContent = "Atrás";
-      if (nextButton)
-        nextButton.textContent = isLastStep ? "Finalizar" : "Siguiente";
-      if (completeButton) completeButton.textContent = "Finalizar";
+      if (backButton && backButton.textContent !== "Atrás") {
+        backButton.textContent = "Atrás";
+      }
+      if (nextButton) {
+        const expectedText = isLastStep ? "Finalizar" : "Siguiente";
+        if (nextButton.textContent !== expectedText) {
+          nextButton.textContent = expectedText;
+        }
+      }
+      if (completeButton && completeButton.textContent !== "Finalizar") {
+        completeButton.textContent = "Finalizar";
+      }
     };
 
     translateButtons();
 
-    const observer = new MutationObserver(translateButtons);
-    observer.observe(document.body, { childList: true, subtree: true });
+    const observer = new MutationObserver((mutations) => {
+      let shouldTranslate = false;
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === "childList" ||
+          (mutation.type === "attributes" &&
+            mutation.attributeName === "class")
+        ) {
+          shouldTranslate = true;
+        }
+      });
+      if (shouldTranslate) {
+        requestAnimationFrame(translateButtons);
+      }
+    });
+
+    const container = wizardContainerRef.current || document.body;
+    if (container) {
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
 
     return () => {
       observer.disconnect();
@@ -115,14 +157,15 @@ const Register = () => {
         <PacmanLoading />
       ) : (
         <>
-          <FormWizard
-            shape="circle"
-            color="#83A580"
-            style={{ borderColor: "#83A580" }}
-            onComplete={handleComplete}
-            onSubmit={handleComplete}
-            onTabChange={tabChanged}
-          >
+          <div ref={wizardContainerRef}>
+            <FormWizard
+              shape="circle"
+              color="#83A580"
+              style={{ borderColor: "#83A580" }}
+              onComplete={handleComplete}
+              onSubmit={handleComplete}
+              onTabChange={tabChanged}
+            >
             <FormWizard.TabContent title="Datos personales" icon="ti-user">
               <h2>Tus datos</h2>
               <Input
@@ -153,7 +196,7 @@ const Register = () => {
                 value={user.gender}
                 onChange={handleInputChange}
               >
-                <option selected>Selecciona el género</option>
+                <option value="">Selecciona el género</option>
                 <option value="masculino">Masculino</option>
                 <option value="femenino">Femenino</option>
                 <option value="otro">Otro</option>
@@ -188,7 +231,7 @@ const Register = () => {
                 value={user.objetive}
                 onChange={handleInputChange}
               >
-                <option selected>Elige tu objetivo</option>
+                <option value="">Elige tu objetivo</option>
                 <option value="comer equilibrado">Comer equilibrado</option>
                 <option value="perder peso">Perder peso</option>
                 <option value="ganar músculo">Ganar músculo</option>
@@ -204,7 +247,7 @@ const Register = () => {
                 value={user.ability}
                 onChange={handleInputChange}
               >
-                <option selected>Tu habilidad en la cocina</option>
+                <option value="">Tu habilidad en la cocina</option>
                 <option value="bajo">
                   Bajo: El colacao cuenta como cocinar
                 </option>
@@ -222,7 +265,7 @@ const Register = () => {
                 value={user.typeDiet}
                 onChange={handleInputChange}
               >
-                <option selected>Tipo de dieta</option>
+                <option value="">Tipo de dieta</option>
                 <option value="omnivoro">
                   Omnivoro: como carne y casi todo
                 </option>
@@ -243,7 +286,7 @@ const Register = () => {
                 value={user.alergic}
                 onChange={handleInputChange}
               >
-                <option selected>Tipo de alimento</option>
+                <option value="">Tipo de alimento</option>
                 <option value="ninguno">Ninguno</option>
                 <option value="huevo">Huevo</option>
                 <option value="marisco">Marisco</option>
@@ -261,6 +304,7 @@ const Register = () => {
               </quote>
             </FormWizard.TabContent>
           </FormWizard>
+          </div>
           {error && <div className="alert alert-danger mt-3">{error}</div>}
           <style>{`
         @import url("https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css");
