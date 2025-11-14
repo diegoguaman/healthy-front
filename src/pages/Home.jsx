@@ -7,7 +7,7 @@ import { saveGeneratedRecipes } from "../utils/generatedRecipesStorage";
 import RecipeCard from "../components/RecipeCard/RecipeCard";
 import "../index.css";
 import "./Home.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 import { BsSearch } from "react-icons/bs";
 import { INGREDIENTS_VALUES } from "../utils/ingredientsButtons";
@@ -195,25 +195,7 @@ const Home = () => {
       ) : (
         <>
           <h2 className="text-center">Bienvenido</h2>
-          <div style={{ position: "relative" }}>
-            <input
-              className="form-control me-2 mb-4 mt-3"
-              type="search"
-              placeholder="Busca tu receta"
-              aria-label="Search"
-              style={{ borderColor: "#83A580" }}
-              onChange={handleSearchInput}
-            />
-            <BsSearch
-              style={{
-                position: "absolute",
-                right: "30px",
-                top: "8px",
-                fontSize: "20px",
-                color: "#83A580",
-              }}
-            />
-          </div>
+          
           {error && (
             <Alert variant="danger" dismissible onClose={() => setError(null)}>
               {error}
@@ -375,6 +357,25 @@ const Home = () => {
           ) : (
             <>
               {/* Separador visual antes de las recetas */}
+              <div style={{ position: "relative" }}>
+            <input
+              className="form-control me-2 mb-4 mt-3"
+              type="search"
+              placeholder="Busca tu receta"
+              aria-label="Search"
+              style={{ borderColor: "#83A580" }}
+              onChange={handleSearchInput}
+            />
+            <BsSearch
+              style={{
+                position: "absolute",
+                right: "30px",
+                top: "8px",
+                fontSize: "20px",
+                color: "#83A580",
+              }}
+            />
+          </div>
               <div style={{ marginTop: "2rem", marginBottom: "1.5rem" }}>
                 <h3 className="text-center mb-4" style={{ color: "#83a580" }}>
                   <i className="fa-solid fa-utensils me-2"></i>
