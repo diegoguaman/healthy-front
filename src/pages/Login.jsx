@@ -49,7 +49,7 @@ const Login = () => {
     try {
       const token = await loginService(credentials);
       login(token, () => {
-        navigate("/profile");
+        navigate("/user-profile");
       });
     } catch (err) {
       setError(handleApiError(err, "Login"));

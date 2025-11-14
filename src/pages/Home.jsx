@@ -81,28 +81,39 @@ const Home = () => {
 
   /**
    * Handles ingredient button click.
-   * Adds or removes ingredient from selected list and updates custom input.
+   * Adds ingredient to selected list and updates custom input.
+   * Uses currentTarget to ensure correct value even when clicking on child elements.
+   * Normalizes value to lowercase for consistent comparison.
    *
    * @param {React.MouseEvent<HTMLButtonElement>} e - Click event
    */
   const handleIngredient = (e) => {
-    const { value } = e.target;
-    let updatedIngredients;
+    e.preventDefault();
+    const { value } = e.currentTarget;
     
-    if (ingredients.includes(value)) {
-      updatedIngredients = ingredients.filter((ingredient) => ingredient !== value);
-    } else {
-      updatedIngredients = [...ingredients, value];
+    if (!value) {
+      return;
     }
     
+    const normalizedValue = value.toLowerCase();
+    const isAlreadySelected = ingredients.some(
+      (ing) => ing.toLowerCase() === normalizedValue
+    );
+    
+    if (isAlreadySelected) {
+      return;
+    }
+    
+    const updatedIngredients = [...ingredients, normalizedValue];
     setIngredients(updatedIngredients);
     updateCustomIngredientsInput(updatedIngredients);
   };
 
   /**
    * Updates the custom ingredients input with selected ingredients.
+   * Preserves original formatting for better UX while maintaining normalized values internally.
    *
-   * @param {Array<string>} selectedIngredients - Array of selected ingredient values
+   * @param {Array<string>} selectedIngredients - Array of selected ingredient values (normalized to lowercase)
    */
   const updateCustomIngredientsInput = (selectedIngredients) => {
     const customInputValue = selectedIngredients.join(", ");
@@ -112,6 +123,7 @@ const Home = () => {
   /**
    * Handles custom ingredients input change.
    * Parses comma-separated values and updates ingredients list.
+   * Normalizes ingredients to lowercase for consistent comparison with button values.
    *
    * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
    */
@@ -121,7 +133,7 @@ const Home = () => {
     
     const parsedIngredients = value
       .split(",")
-      .map((ing) => ing.trim())
+      .map((ing) => ing.trim().toLowerCase())
       .filter((ing) => ing.length > 0);
     
     setIngredients(parsedIngredients);
@@ -129,11 +141,15 @@ const Home = () => {
 
   /**
    * Removes an ingredient from the list.
+   * Uses case-insensitive comparison to ensure correct removal.
    *
    * @param {string} ingredientToRemove - Ingredient to remove
    */
   const removeIngredient = (ingredientToRemove) => {
-    const updatedIngredients = ingredients.filter((ing) => ing !== ingredientToRemove);
+    const normalizedToRemove = ingredientToRemove.toLowerCase();
+    const updatedIngredients = ingredients.filter(
+      (ing) => ing.toLowerCase() !== normalizedToRemove
+    );
     setIngredients(updatedIngredients);
     updateCustomIngredientsInput(updatedIngredients);
   };
@@ -257,7 +273,10 @@ const Home = () => {
                   <div className="ingredients-grid">
                     {INGREDIENTS_VALUES.map((ingredient) => {
                       const IconComponent = ingredient.iconComponent;
-                      const isSelected = ingredients.includes(ingredient.value);
+                      const normalizedValue = ingredient.value.toLowerCase();
+                      const isSelected = ingredients.some(
+                        (ing) => ing.toLowerCase() === normalizedValue
+                      );
                       return (
                         <button
                           key={ingredient.value}
@@ -265,6 +284,9 @@ const Home = () => {
                           className={`ingredient-btn ${isSelected ? "ingredient-btn-selected" : ""}`}
                           value={ingredient.value}
                           onClick={handleIngredient}
+                          disabled={isSelected}
+                          aria-label={`${isSelected ? "Ya seleccionado: " : "Seleccionar "}${ingredient.text}`}
+                          aria-pressed={isSelected}
                         >
                           <span className="ingredient-icon">
                             {isSelected ? (
