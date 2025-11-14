@@ -1,0 +1,104 @@
+.day-plan-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.day-plan-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(131, 165, 128, 0.2);
+  border-color: #83a580;
+}
+
+.day-plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.day-plan-date {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.day-plan-date i {
+  color: #83a580;
+}
+
+.day-plan-meal-count {
+  background: #83a580;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.day-plan-meals-preview {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.day-plan-meals-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.day-plan-meals-list li {
+  padding: 0.5rem 0;
+  color: #555;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.day-plan-meals-list li i {
+  color: #83a580;
+  font-size: 0.75rem;
+}
+
+.day-plan-more-meals {
+  color: #999 !important;
+  font-style: italic;
+}
+
+.day-plan-card-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.day-plan-view-link {
+  color: #83a580;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.day-plan-card:hover .day-plan-view-link {
+  color: #6b8e6a;
+}
+

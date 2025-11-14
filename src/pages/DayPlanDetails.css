@@ -1,0 +1,193 @@
+.day-plan-details-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+}
+
+.plan-details-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.plan-details-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #83a580;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-details-date {
+  font-size: 1.25rem;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+}
+
+.plan-summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border: 2px solid rgba(131, 165, 128, 0.2);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.summary-item i {
+  font-size: 2rem;
+  color: #83a580;
+}
+
+.summary-item div {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item strong {
+  font-size: 1.5rem;
+  color: #333;
+  font-weight: 700;
+}
+
+.summary-item span {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.meals-section {
+  margin-bottom: 2rem;
+}
+
+.meals-section-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #83a580;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.meal-item {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.meal-item:hover {
+  border-color: #83a580;
+  box-shadow: 0 4px 16px rgba(131, 165, 128, 0.2);
+}
+
+.meal-time-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.time-label {
+  background: #83a580;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.meal-type-label {
+  background: #f8f9fa;
+  color: #666;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.meal-recipe {
+  margin-top: 1rem;
+}
+
+.plan-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-custom-outline {
+  border-color: #83a580;
+  color: #83a580;
+}
+
+.btn-custom-outline:hover {
+  background-color: #83a580;
+  border-color: #83a580;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plan-details-title {
+    font-size: 2rem;
+  }
+
+  .plan-summary-card {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .back-button {
+    position: relative;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .meal-time-badge {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .plan-actions {
+    flex-direction: column;
+  }
+
+  .plan-actions button {
+    width: 100%;
+  }
+}
+

@@ -55,12 +55,7 @@ const Navbar = () => {
     >
       <div className="container-fluid">
         <Link className="navbar-brand" to="/" style={{ color: "#83A580" }}>
-          <img
-            src="/Logo-Healthy2.png"
-            className="img-fluid"
-            style={{ width: "auto", height: "70px" }}
-            alt="Healthy App"
-          />
+          <h1 className="navbar-brand-text">Healthy</h1>
         </Link>
 
         <button
@@ -106,6 +101,7 @@ const Navbar = () => {
                 <ul className="dropdown-menu dropdown-menu-dark">
                   <li>
                     <Link className="dropdown-item" to="/user-profile">
+                    <i className="fa-solid fa-user me-2"></i>
                       Mis datos personales
                     </Link>
                   </li>
@@ -121,18 +117,17 @@ const Navbar = () => {
                       Mis recetas favoritas
                     </Link>
                   </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/profile">
-                      <i className="fa-solid fa-user me-2"></i>
-                      Ver perfil completo
-                    </Link>
-                  </li>
                 </ul>
               </li>
             )}
+            <li className="nav-item">
+              {user && (
+                <Link className="nav-link" aria-current="page" to="/day-plan">
+                  <i className="fa-solid fa-calendar-check me-1"></i>
+                  Planes de Comidas
+                </Link>
+              )}
+            </li>
             <li className="nav-item">
               {user && (
                 <Link className="nav-link" aria-current="page" to="/calendar">

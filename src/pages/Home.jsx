@@ -6,6 +6,7 @@ import { handleApiError } from "../utils/error-handler";
 import { saveGeneratedRecipes } from "../utils/generatedRecipesStorage";
 import RecipeCard from "../components/RecipeCard/RecipeCard";
 import "../index.css";
+import "./Home.css";
 import { Link, useNavigate } from "react-router-dom";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 import { BsSearch } from "react-icons/bs";
@@ -21,6 +22,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [ingredients, setIngredients] = useState([]);
+  const [customIngredients, setCustomIngredients] = useState("");
   const [recipes, setRecipes] = useState([]);
   const [recipesApi, setRecipesApi] = useState([]);
   const [loadingApi, setLoadingApi] = useState(false);
@@ -77,17 +79,63 @@ const Home = () => {
     );
   });
 
+  /**
+   * Handles ingredient button click.
+   * Adds or removes ingredient from selected list and updates custom input.
+   *
+   * @param {React.MouseEvent<HTMLButtonElement>} e - Click event
+   */
   const handleIngredient = (e) => {
     const { value } = e.target;
+    let updatedIngredients;
+    
     if (ingredients.includes(value)) {
-      setIngredients(
-        ingredients.filter((ingredient) => {
-          return ingredient !== value;
-        })
-      );
+      updatedIngredients = ingredients.filter((ingredient) => ingredient !== value);
     } else {
-      setIngredients([...ingredients, value]);
+      updatedIngredients = [...ingredients, value];
     }
+    
+    setIngredients(updatedIngredients);
+    updateCustomIngredientsInput(updatedIngredients);
+  };
+
+  /**
+   * Updates the custom ingredients input with selected ingredients.
+   *
+   * @param {Array<string>} selectedIngredients - Array of selected ingredient values
+   */
+  const updateCustomIngredientsInput = (selectedIngredients) => {
+    const customInputValue = selectedIngredients.join(", ");
+    setCustomIngredients(customInputValue);
+  };
+
+  /**
+   * Handles custom ingredients input change.
+   * Parses comma-separated values and updates ingredients list.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
+  const handleCustomIngredientsChange = (e) => {
+    const value = e.target.value;
+    setCustomIngredients(value);
+    
+    const parsedIngredients = value
+      .split(",")
+      .map((ing) => ing.trim())
+      .filter((ing) => ing.length > 0);
+    
+    setIngredients(parsedIngredients);
+  };
+
+  /**
+   * Removes an ingredient from the list.
+   *
+   * @param {string} ingredientToRemove - Ingredient to remove
+   */
+  const removeIngredient = (ingredientToRemove) => {
+    const updatedIngredients = ingredients.filter((ing) => ing !== ingredientToRemove);
+    setIngredients(updatedIngredients);
+    updateCustomIngredientsInput(updatedIngredients);
   };
 
   /**
@@ -99,15 +147,21 @@ const Home = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    if (ingredients.length === 0) {
+    const finalIngredients = ingredients.length > 0 
+      ? ingredients 
+      : customIngredients.split(",").map((ing) => ing.trim()).filter((ing) => ing.length > 0);
+
+    if (finalIngredients.length === 0) {
+      setError("Por favor, selecciona o escribe al menos un ingrediente");
       return;
     }
 
     setLoadingApi(true);
     setShowModal(false);
+    setError(null);
 
     try {
-      const response = await createChat(ingredients);
+      const response = await createChat(finalIngredients);
       const generatedRecipes = response.createdRecipes || response.recipes || [];
       
       if (generatedRecipes.length > 0) {
@@ -117,6 +171,7 @@ const Home = () => {
       }
       
       setIngredients([]);
+      setCustomIngredients("");
       setError(null);
     } catch (err) {
       setError(handleApiError(err, "Recipe Generation"));
@@ -166,64 +221,112 @@ const Home = () => {
           )}
           <div className="container">
             {user && (
-              <>
-                <h2 className="h2 mb-4">Puedes crear tu receta customizada</h2>
-                <p className="text-center">
-                  Elige los ingredientes que quieres probar y prepararemos
-                  recetas para tí!
-                </p>
+              <div className="custom-recipe-section">
+                <div className="custom-recipe-header">
+                  <h2 className="custom-recipe-title">
+                    <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+                    Crea tu receta personalizada
+                  </h2>
+                  <p className="custom-recipe-subtitle">
+                    Elige ingredientes de la lista o escribe los tuyos propios
+                  </p>
+                </div>
 
-                <form
-                  onSubmit={onSubmit}
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "10px",
-                    justifyContent: "center",
-                    boxShadow: "0 0 10px #83a580",
-                    padding: "15px",
-                  }}
-                >
-                  {INGREDIENTS_VALUES.map((ingredient) => {
-                    const IconComponent = ingredient.iconComponent;
-                    return (
-                      <button
-                        key={ingredient.value}
-                        type="button"
-                        className="btn btn-custom-ingredients"
-                        value={ingredient.value}
-                        onClick={handleIngredient}
-                      >
-                        {!ingredients.includes(ingredient.value) ? (
-                          IconComponent ? (
-                            <IconComponent />
-                          ) : (
-                            <i className={`fa-solid ${ingredient.icon}`}></i>
-                          )
-                        ) : (
-                          <i
-                            className="fa-solid fa-check"
-                            style={{ color: "#00ff6a" }}
-                          ></i>
-                        )}{" "}
-                        {ingredient.text}
-                      </button>
-                    );
-                  })}
-                  <div className="row w-100 btn-lg-custom">
-                    <div className="col d-flex justify-content-center mt-3">
-                      <button
-                        type="submit"
-                        className="btn btn-custom btn-padding-custom"
-                      >
-                        Enviar
-                      </button>
+                <form onSubmit={onSubmit} className="custom-recipe-form">
+                  {/* Input para ingredientes personalizados */}
+                  <div className="custom-ingredients-input-wrapper">
+                    <label htmlFor="customIngredients" className="custom-input-label">
+                      <i className="fa-solid fa-pencil me-2"></i>
+                      Ingredientes seleccionados
+                    </label>
+                    <div className="input-with-chips">
+                      <input
+                        id="customIngredients"
+                        type="text"
+                        className="form-control custom-ingredients-input"
+                        placeholder="Escribe ingredientes separados por comas o selecciona de la lista..."
+                        value={customIngredients}
+                        onChange={handleCustomIngredientsChange}
+                      />
+                      {ingredients.length > 0 && (
+                        <div className="selected-ingredients-chips">
+                          {ingredients.map((ingredient, index) => (
+                            <span key={index} className="ingredient-chip">
+                              {ingredient}
+                              <button
+                                type="button"
+                                className="chip-remove-btn"
+                                onClick={() => removeIngredient(ingredient)}
+                                aria-label={`Eliminar ${ingredient}`}
+                              >
+                                <i className="fa-solid fa-times"></i>
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                    <small className="form-text text-muted">
+                      Puedes escribir ingredientes separados por comas o hacer clic en los botones de abajo
+                    </small>
+                  </div>
+
+                  {/* Grid de botones de ingredientes */}
+                  <div className="ingredients-grid">
+                    {INGREDIENTS_VALUES.map((ingredient) => {
+                      const IconComponent = ingredient.iconComponent;
+                      const isSelected = ingredients.includes(ingredient.value);
+                      return (
+                        <button
+                          key={ingredient.value}
+                          type="button"
+                          className={`ingredient-btn ${isSelected ? "ingredient-btn-selected" : ""}`}
+                          value={ingredient.value}
+                          onClick={handleIngredient}
+                        >
+                          <span className="ingredient-icon">
+                            {isSelected ? (
+                              <i className="fa-solid fa-check-circle"></i>
+                            ) : IconComponent ? (
+                              <IconComponent />
+                            ) : (
+                              <i className={`fa-solid ${ingredient.icon}`}></i>
+                            )}
+                          </span>
+                          <span className="ingredient-text">{ingredient.text}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Botón de envío */}
+                  <div className="submit-button-wrapper">
+                    <button
+                      type="submit"
+                      className="btn btn-custom submit-recipe-btn"
+                      disabled={loadingApi || (ingredients.length === 0 && customIngredients.trim().length === 0)}
+                    >
+                      {loadingApi ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Generando...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+                          Generar Recetas
+                        </>
+                      )}
+                    </button>
                   </div>
                 </form>
-              </>
+              </div>
             )}
           </div>
+          
+          {/* Separador visual entre ingredientes y recetas */}
+          {user && <div style={{ marginTop: "3rem", marginBottom: "2rem" }}></div>}
+          
           {user && recipesApi && recipesApi.length > 0 && (
             <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
               <Modal.Header closeButton>
@@ -270,13 +373,22 @@ const Home = () => {
               </div>
             </>
           ) : (
-            <div className="row">
-              {filteredRecipes.map((recipe) => (
-                <div key={recipe._id} className="col-12 col-md-6 col-lg-4 mb-4">
-                  <RecipeCard recipe={recipe} />
-                </div>
-              ))}
-            </div>
+            <>
+              {/* Separador visual antes de las recetas */}
+              <div style={{ marginTop: "2rem", marginBottom: "1.5rem" }}>
+                <h3 className="text-center mb-4" style={{ color: "#83a580" }}>
+                  <i className="fa-solid fa-utensils me-2"></i>
+                  Recetas Disponibles
+                </h3>
+              </div>
+              <div className="row">
+                {filteredRecipes.map((recipe) => (
+                  <div key={recipe._id} className="col-12 col-md-6 col-lg-4 mb-4">
+                    <RecipeCard recipe={recipe} />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
           <button
             className={`scroll-to-top ${showScroll ? "show" : ""}`}

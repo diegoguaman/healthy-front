@@ -15,19 +15,3 @@ export const createChat = (ingredients) => {
   }
   return http.post("/chat", { ingredients });
 };
-
-/**
- * Generates a daily meal plan for the authenticated user.
- * Requires authentication and AI API key configured in backend.
- *
- * @param {Object} data - Plan data containing startDate and userPreferences
- * @param {string} data.startDate - Start date in YYYY-MM-DD format
- * @param {Object} data.userPreferences - User preferences (objetive, ability, typeDiet, alergic)
- * @returns {Promise<Object>} Daily meal plan object
- */
-export const createDayPlan = (data) => {
-  if (!data?.startDate || !data?.userPreferences) {
-    return Promise.reject(new Error("startDate and userPreferences are required"));
-  }
-  return http.post("/dayPlan", data);
-};

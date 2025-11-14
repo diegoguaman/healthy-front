@@ -53,8 +53,7 @@ const RecipeCard = ({ recipe, className = "", style = {} }) => {
               )}
               <Link
                 to={`/recipes/${recipe._id}`}
-                className="btn btn-custom recipe-card__link"
-                style={{ color: "#83a580" }}
+                className="btn btn-outline-success recipe-card__link"
               >
                 Ver más <i className="fa-solid fa-arrow-right ms-1"></i>
               </Link>

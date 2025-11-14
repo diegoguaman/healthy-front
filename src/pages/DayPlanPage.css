@@ -1,0 +1,270 @@
+.day-plan-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+}
+
+.day-plan-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.day-plan-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #83a580;
+  margin-bottom: 0.5rem;
+}
+
+.day-plan-subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Create Plan Section */
+.create-plan-section {
+  margin-bottom: 4rem;
+}
+
+.create-plan-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(131, 165, 128, 0.2);
+}
+
+.create-plan-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.create-plan-title i {
+  color: #83a580;
+}
+
+.create-plan-description {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.create-plan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.form-label i {
+  color: #83a580;
+}
+
+.date-picker-custom {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.date-picker-custom:focus {
+  outline: none;
+  border-color: #83a580;
+  box-shadow: 0 0 0 3px rgba(131, 165, 128, 0.1);
+}
+
+.user-preferences-info {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.preferences-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.preferences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.preference-item {
+  display: flex;
+  align-items: center;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.preference-item i {
+  color: #83a580;
+  margin-right: 0.5rem;
+}
+
+.create-plan-btn {
+  padding: 0.875rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  align-self: flex-start;
+  min-width: 200px;
+}
+
+.create-plan-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* My Plans Section */
+.my-plans-section {
+  margin-top: 3rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #83a580;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.plan-card-wrapper {
+  height: 100%;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: #83a580;
+  opacity: 0.5;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+  color: #666;
+  font-size: 1rem;
+}
+
+.generated-plan-preview {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.generated-plan-preview h5 {
+  margin-bottom: 0.75rem;
+  color: #333;
+}
+
+.generated-plan-preview ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.generated-plan-preview li {
+  padding: 0.5rem 0;
+  color: #555;
+}
+
+.generated-plan-preview li:before {
+  content: "✓ ";
+  color: #83a580;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .day-plan-title {
+    font-size: 2rem;
+  }
+
+  .create-plan-card {
+    padding: 1.5rem;
+  }
+
+  .create-plan-title {
+    font-size: 1.5rem;
+  }
+
+  .preferences-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .create-plan-btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+

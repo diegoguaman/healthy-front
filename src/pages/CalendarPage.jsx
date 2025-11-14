@@ -1,17 +1,15 @@
-//import format from "date-fns/format";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
-
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import "./../../src/index.css";
-import { createDayPlan } from "../services/ChatService";
-import { AuthContext } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
+import { createDayPlan } from "../services/DayPlanService";
 import { useNavigate } from "react-router-dom";
+import "../index.css";
 
 registerLocale("es", es);
 
@@ -26,7 +24,7 @@ const initialEvents = [
 ];
 
 const CalendarPage = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [newEvent, setNewEvent] = useState({
     title: "",
