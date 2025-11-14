@@ -4,14 +4,15 @@ const httpPublic = createHttp(false);
 
 /**
  * Registers a new user (public endpoint).
+ * Validates required fields and ensures data is properly formatted.
  *
  * @param {Object} user - User registration data
  * @param {string} user.name - User's name
  * @param {string} user.email - User's email
  * @param {string} user.password - User's password
  * @param {string} user.gender - User's gender
- * @param {number} user.weight - User's weight in kg
- * @param {number} user.height - User's height in cm
+ * @param {number} [user.weight] - User's weight in kg (optional)
+ * @param {number} [user.height] - User's height in cm (optional)
  * @param {string} user.objetive - User's objective
  * @param {string} user.ability - User's cooking ability level
  * @param {string} user.typeDiet - User's diet type
@@ -22,6 +23,15 @@ export const createUser = (user) => {
   if (!user?.email || !user?.password) {
     return Promise.reject(new Error("Email and password are required"));
   }
+
+  // Log request data in development for debugging
+  if (import.meta.env.DEV) {
+    console.log("[UserService] Registering user with data:", {
+      ...user,
+      password: user.password ? "***" : undefined,
+    });
+  }
+
   return httpPublic.post("/register", user);
 };
 

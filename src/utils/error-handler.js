@@ -8,6 +8,7 @@
 /**
  * Formats error messages for user display.
  * Handles different error types (API errors, network errors, etc.).
+ * Prioritizes backend error messages over generic messages.
  *
  * @param {Error|Object|string} error - Error object, error response, or error message
  * @returns {string} User-friendly error message
@@ -17,34 +18,49 @@ export const formatErrorMessage = (error) => {
     return error;
   }
 
-  if (error?.message) {
-    return error.message;
-  }
-
-  if (error?.response?.data?.message) {
-    return error.response.data.message;
-  }
-
-  if (error?.response?.data?.error) {
-    return error.response.data.error;
-  }
-
+  // Priority 1: Check error.response.data (from axios interceptors)
   if (error?.response?.data) {
     const data = error.response.data;
+    
+    // Check for message property
+    if (data?.message && typeof data.message === "string") {
+      return data.message;
+    }
+    
+    // Check for error property
+    if (data?.error && typeof data.error === "string") {
+      return data.error;
+    }
+    
+    // Check if data is a string directly
     if (typeof data === "string") {
       if (data.includes("Cannot GET") || data.includes("404")) {
         return "El recurso solicitado no está disponible en este momento.";
       }
       return data;
     }
-    if (data.toString && typeof data.toString === "function") {
-      const dataString = data.toString();
-      if (dataString.includes("Cannot GET") || dataString.includes("404")) {
-        return "El recurso solicitado no está disponible en este momento.";
-      }
+    
+    // Check for nested error objects
+    if (data?.error?.message) {
+      return data.error.message;
     }
   }
 
+  // Priority 2: Check top-level message property
+  if (error?.message && typeof error.message === "string") {
+    return error.message;
+  }
+
+  // Priority 3: Check for network errors
+  if (error?.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
+    return "La solicitud tardó demasiado. Por favor, intenta de nuevo.";
+  }
+
+  if (error?.message?.includes("Network Error")) {
+    return "Error de conexión. Verifica tu conexión a internet.";
+  }
+
+  // Default fallback message
   return "Ha ocurrido un error inesperado. Por favor, intenta de nuevo.";
 };
 

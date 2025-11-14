@@ -35,10 +35,32 @@ const createHttp = (useAccessToken = false) => {
   }
 
   http.interceptors.response.use(
-    (response) => response.data,
+    (response) => {
+      // Log successful responses in development
+      if (import.meta.env.DEV) {
+        console.log("[BaseService] Response:", {
+          status: response.status,
+          url: response.config?.url,
+          data: response.data,
+        });
+      }
+      return response.data;
+    },
     (error) => {
       const statusCode = error?.response?.status;
       let errorData = error?.response?.data;
+
+      // Log errors in development for debugging
+      if (import.meta.env.DEV) {
+        console.error("[BaseService] Request error:", {
+          status: statusCode,
+          url: error?.config?.url,
+          method: error?.config?.method,
+          data: error?.config?.data,
+          responseData: errorData,
+          message: error?.message,
+        });
+      }
 
       if (statusCode === UNAUTHORIZED_STATUS_CODE) {
         if (getAccessToken()) {

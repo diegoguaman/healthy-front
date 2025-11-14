@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginService } from "../services/UserService";
 import { useAuth } from "../hooks/useAuth";
 import { handleApiError } from "../utils/error-handler";
 import "../index.css";
+import "./Login.css";
 import PacmanLoading from "../components/PacmanLoading/PacmanLoading";
 
 /**
@@ -24,6 +25,7 @@ const Login = () => {
   /**
    * Handles input field changes.
    * Uses functional update pattern for better performance.
+   * Clears error when user starts typing to provide immediate feedback.
    *
    * @param {React.ChangeEvent<HTMLInputElement>} event - Input change event
    */
@@ -33,6 +35,10 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
+    // Clear error when user starts typing to correct the issue
+    if (error) {
+      setError(null);
+    }
   };
 
   /**
@@ -52,24 +58,38 @@ const Login = () => {
         navigate("/user-profile");
       });
     } catch (err) {
-      setError(handleApiError(err, "Login"));
+      const errorMessage = handleApiError(err, "Login");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  /**
+   * Auto-dismisses error message after 5 minutes.
+   */
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 300000); // 5 minutos = 300000 ms
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   if (currentUser) {
     return <Navigate to="/profile" replace />;
   }
 
   return (
-    <div className="mt-3 mb-2">
+    <div className="login-container">
       {loading ? (
         <PacmanLoading />
       ) : (
         <>
-          <h2 style={{ textAlign: "center" }}>Iniciar Sesión</h2>
-          <form onSubmit={handleSubmit}>
+          <h2 className="login-title">Iniciar Sesión</h2>
+          <form onSubmit={handleSubmit} className="login-form">
             <div className="mb-3">
               <label htmlFor="email" className="form-label form-label-center">
                 Email
@@ -106,7 +126,7 @@ const Login = () => {
               />
             </div>
             {error && (
-              <div className="alert alert-danger" role="alert">
+              <div className="alert alert-danger login-error" role="alert">
                 {error}
               </div>
             )}
