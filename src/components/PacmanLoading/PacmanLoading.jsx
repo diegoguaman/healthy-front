@@ -1,17 +1,44 @@
-import React from "react";
+import PropTypes from "prop-types";
 import "./PacmanLoading.css";
 
-const PacmanLoading = ({text}) => {
+/**
+ * PacmanLoading Component
+ * Displays a loading spinner with optional text.
+ * Uses CSS spinner with brand color #83A580 as fallback if GIF is not available.
+ *
+ * @param {Object} props - Component props
+ * @param {string} [props.text] - Optional text to display above the loader
+ */
+const PacmanLoading = ({ text }) => {
   return (
-    <div className="PacmanLoading ">
-      <h1>{text? text : ""}</h1>
-      <img
-        src="https://res.cloudinary.com/dgtbm9skf/image/upload/v1720712247/gif-loading-color_dhjnvl.gif"
-        className="img-fluid"
-        alt="Healthy App gif"
-      />
+    <div className="PacmanLoading">
+      {text && <h1>{text}</h1>}
+      <div className="loading-container">
+        {/* Try to load GIF, fallback to CSS spinner */}
+        <img
+          src="/gif-loading-color.gif"
+          className="loading-gif"
+          alt="Loading..."
+          onError={(e) => {
+            // Hide GIF if it fails to load, CSS spinner will show
+            e.target.style.display = "none";
+            e.target.parentElement.classList.add("use-spinner");
+          }}
+        />
+        <div className="css-spinner" aria-hidden="true">
+          <div className="spinner-ring"></div>
+        </div>
+      </div>
     </div>
   );
+};
+
+PacmanLoading.propTypes = {
+  text: PropTypes.string,
+};
+
+PacmanLoading.defaultProps = {
+  text: "",
 };
 
 export default PacmanLoading;
